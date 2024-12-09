@@ -1,0 +1,38 @@
+version: '3.9'
+
+services:
+  user_service:
+    build: ./user_service
+    ports:
+      - "8001:8000"
+    environment:
+      - DATABASE_URL=postgresql://user:password@db:5432/users_db
+    depends_on:
+      - db
+
+  profile_service:
+    build: ./profile_service
+    ports:
+      - "8002:8000"
+    environment:
+      - DATABASE_URL=postgresql://user:password@db:5432/profiles_db
+    depends_on:
+      - db
+
+  db:
+    image: postgres:15
+    environment:
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: users_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    command: >
+      sh -c "
+      docker-entrypoint.sh postgres &&
+      psql -U user -c 'CREATE DATABASE profiles_db;'"
+      
+volumes:
+  postgres_data:
